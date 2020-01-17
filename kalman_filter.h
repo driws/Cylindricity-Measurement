@@ -3,7 +3,9 @@
 #include <Eigen\Dense>
 #include <Eigen\Core>
 #include <QFile>
-#include <iostream>
+#include <QTextStream>
+#include <QVector>
+#include <QDebug>
 using Eigen::VectorXd;
 using Eigen::MatrixXd;
 
@@ -29,11 +31,9 @@ public:
 	int get_state_size() const { return state_size; };
 	int get_meas_size() const { return meas_size; };
 	int get_usize() const { return usize; };
-	void Init();
+	void Init(QString filename);
 	void Predict(VectorXd xprev);
 	VectorXd Update(VectorXd y_meas);
-
-
 
 };
 #endif // !KALMAN_FILTER_H

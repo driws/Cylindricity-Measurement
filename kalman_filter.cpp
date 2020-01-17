@@ -2,10 +2,6 @@
 
 KalmanFilter::KalmanFilter(int state_size_, int meas_size_, int usize_)
 {
-	if (state_size_ == 0 || meas_size_ == 0)
-	{
-		std::cerr << "状态向量和输出向量的大小都应大于0\n";
-	}
 	state_size = state_size_;
 	meas_size = meas_size_;
 	usize = usize_;
@@ -43,33 +39,43 @@ KalmanFilter::~KalmanFilter()
 
 }
 
-void KalmanFilter::Init()
+void KalmanFilter::Init(QString filename)
 {
+	QFile fp(filename);
+	QStringList numList;
+	QString line;
+	QVector<MatrixXd*> paramVector;
+	int row, col;
+	paramVector.push_back(&A);
+	paramVector.push_back(&B);
+	paramVector.push_back(&H);
+	paramVector.push_back(&P);
+	paramVector.push_back(&Q);
+	paramVector.push_back(&R);
 
-	A << 1,1,0,0,0,0,
-		0,1,0,0,0,0,
-		0,0,1,1,0,0,
-		0,0,0,1,0,0,
-		0,0,0,0,1,1,
-		0,0,0,0,0,1;
-	P << 50000, 0, 0, 0, 0, 0,
-		0, 30000, 0, 0, 0, 0,
-		0, 0, 50000, 0, 0, 0,
-		0, 0, 0, 30000, 0, 0,
-		0, 0, 0, 0, 50000, 0,
-		0, 0, 0, 0, 0, 30000;
-	Q << 1, 0, 0, 0, 0, 0,
-		0, 1, 0, 0, 0, 0,
-		0, 0, 1, 0, 0, 0,
-		0, 0, 0, 1, 0, 0,
-		0, 0, 0, 0, 1, 0,
-		0, 0, 0, 0, 0, 1;
-	R << 150, 0, 0,
-		0, 150, 0,
-		0, 0, 150;
-	H << 1, 0, 0, 0, 0, 0,
-		0, 0, 1, 0, 0, 0,
-		0, 0, 0, 0, 1, 0;
+	if (fp.open(QIODevice::ReadOnly | QIODevice::Text))
+	{
+		QTextStream in(&fp);
+		for (int k = 0; k < paramVector.size(); k++)
+		{
+			line = in.readLine();
+			line = in.readLine();
+			numList = line.split(" ");
+			row = numList[0].toInt();
+			col = numList[1].toInt();
+			paramVector[k]->setZero(row, col);
+			for (int i = 0; i < row; i++)
+			{
+				line = in.readLine();
+				numList = line.split(" ");
+				for (int j = 0; j < col; j++)
+				{
+					(*paramVector[k])(i, j) = numList[j].toDouble();
+				}
+			}
+		}
+	}
+
 }
 
 void KalmanFilter::Predict(VectorXd xprev)
